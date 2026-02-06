@@ -1,0 +1,35 @@
+# This workflow will build and test a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: comp check
+
+on:
+  push:
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use HTTPS instead of SSH for Git cloning
+        run: git config --global url.https://github.com/.insteadOf ssh://git@github.com/
+      - name: Checkout project
+        uses: actions/checkout@v5
+      - name: check size
+        run: |
+          sudo rm -rf \
+          /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+          /usr/local/share/powershell /usr/share/swift /usr/local/.ghcup \
+          /usr/lib/jvm || true
+          
+          sudo du /usr -h --max-depth 2 | sort -h
+          
+          sudo du /opt -h --max-depth 2 | sort -h
+          
+          docker image ls
+          
+          df -h
+      - name: Run GitHub Action for ORT
+        uses: oss-review-toolkit/ort-ci-github-action@main
+        with:
+          run: 'cache-dependencies,analyzer,scanner,evaluator,advisor,reporter,upload-results'
